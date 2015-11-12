@@ -3,9 +3,117 @@
 <html>
 	<head>
 		<title>Welcome to Introduction to Node.js</title>
+		<script src="libs/jquery/dist/jquery.js"></script>
+		<script src="libs/angular/angular.js"></script>
+		<script src="libs/angular-ui-router/release/angular-ui-router.js"></script>
 	</head>
 
 	<body>
-		Welcome to Introduction to Node.js
+		<div ng-app="WidgetApp">
+			<div ui-view></div>
+			<script>
+
+				angular.module("WidgetApp", ["ui.router"])
+					.factory("Widgets", function($http) {
+						return {
+							getAll: function() {
+								return $http.get("/api/widgets");
+							},
+							get: function(widgetId) {
+								return $http.get("/api/widgets/" + encodeURIComponent(widgetId));
+							},
+							insert: function(widget) {
+								return $http.post("/api/widgets", widget);
+							},
+							update: function(widget) {
+								return $http.put("/api/widgets/" + encodeURIComponent(widget.id), widget);
+							},
+							delete: function(widgetId) {
+								return $http.delete("/api/widgets/" + encodeURIComponent(widgetId));
+							}
+						};
+					})
+					.controller("WidgetListCtrl", function($scope, Widgets, $state) {
+						Widgets.getAll().then(function(results) {
+							$scope.widgets = results.data;
+
+							$scope.createWidget = function() {
+								$state.go("create");
+							}
+						})
+					})
+					.controller("WidgetViewCtrl", function($scope, Widgets, $stateParams, $state) {
+						Widgets.get($stateParams.widgetId).then(function(results) {
+							$scope.widget = results.data;
+						});
+
+						$scope.editWidget = function() {
+							$state.go("create", { widgetId: $stateParams.widgetId });
+						};
+
+						$scope.returnToList = function() {
+							$state.go("home");
+						}
+					})
+					.controller("WidgetEditCtrl", function($scope, Widgets, $stateParams, $state) {
+
+						if ($stateParams.widgetId) {
+							Widgets.get($stateParams.widgetId).then(function(results) {
+								$scope.widget = results.data;
+							});
+						} else {
+							$scope.widget = {};
+						}
+
+						$scope.saveWidget = function() {
+							if ($stateParams.widgetId) {
+								Widgets.update($scope.widget).then(function() {
+									$state.go("home");
+								});
+							} else {
+								Widgets.insert($scope.widget).then(function() {
+									$state.go("home");
+								});
+							}
+						};
+
+						$scope.returnToList = function() {
+							$state.go("home");
+						};
+
+						$scope.deleteWidget = function() {
+							Widgets.delete($scope.widget.id).then(function() {
+								$state.go("list");
+							});
+						};
+					})
+					.config(function($stateProvider, $urlRouterProvider) {
+
+						$urlRouterProvider.otherwise("/");
+
+						$stateProvider
+							.state("home", {
+								url: "/",
+								controller: "WidgetListCtrl",
+								templateUrl: "tpl/widget_list.html"
+							})
+							.state("create", {
+								url: "/widget/create",
+								controller: "WidgetEditCtrl",
+								templateUrl: "tpl/widget_edit.html"
+							})
+							.state("view", {
+								url: "/widget/:widgetId",
+								controller: "WidgetViewCtrl",
+								templateUrl: "tpl/widget_view.html"
+							})
+							.state("edit", {
+								url: "/widget/:widgetId?/edit",
+								controller: "WidgetEditCtrl",
+								templateUrl: "tpl/widget_edit.html"
+							})
+						});
+
+			</script>
 	</body>
 </html>

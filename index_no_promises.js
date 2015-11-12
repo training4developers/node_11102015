@@ -20,43 +20,39 @@ program.port = program.port || defaultPort;
 program.folder = program.folder || defaultFolder;
 program.config = program.config || defaultConfig;
 
-let p;
-
 if (program.config) {
 
-	p = new Promise(function(resolve, reject) {
-		console.log("running promise");
-		const fs = require("fs");
-		let configFile = path.join(__dirname, program.config);
+	const
+		fs = require("fs");
 
-		fs.readFile(configFile, "utf-8", function(err, data) {
-			if (err) { reject(err); return; }
-			resolve(JSON.parse(data));
-		});
+	let
+		configFile = path.join(__dirname, program.config);
+
+	fs.readFile(configFile, "utf-8", function(err, data) {
+
+		if (err) {
+			console.log("unable to load the file");
+			return;
+		}
+
+		startApplication(JSON.parse(data));
 	});
-	console.log("just setup promise");
 
 } else {
-	p = new Promise(function(resolve) {
-		console.log("running promise");
-		resolve({
-			webServer: {
-				port: program.port,
-				folder: program.folder
-			}
-		})
+	startApplication({
+		webServer: {
+			port: program.port,
+			folder: program.folder
+		}
 	});
-	console.log("just setup promise");
 }
 
-p.then(function(config) {
-	console.log("loaded config");
+function startApplication(config) {
+
 	try {
 		require("./app/app")(config);
 	} catch(err) {
 		console.error(err);
 	}
-}).catch(function(err) {
-	console.error(err.message);
-});
-console.log("all done");
+
+}

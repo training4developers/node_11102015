@@ -1,0 +1,25 @@
+<table>
+	<thead>
+		<tr>
+			<td>Name</td>
+			<td>Color</td>
+			<td>Size</td>
+			<td>Qty</td>
+			<td>Action</td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="widget in widgets">
+			<td>{{widget.name}}</td>
+			<td>{{widget.color}}</td>
+			<td>{{widget.size}}</td>
+			<td>{{widget.qty}}</td>
+			<td>
+				<a ui-sref="view({ widgetId: widget.id })">View</a>
+				<a ui-sref="edit({ widgetId: widget.id })">Edit</a>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<button ng-click="createWidget()">Create</button>
